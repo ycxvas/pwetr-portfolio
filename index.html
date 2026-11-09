@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pwetr Desktop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: a browser "desktop" — icons left, draggable windows, taskbar bottom. Phone: one window at a time, full screen. */
+:root{
+  --bg:#0e1116; --bg2:#151a22; --win:#171d27; --bar:#1f2733; --line:#2a3443;
+  --fg:#e6edf3; --mute:#8b98a9; --accent:#ff7a45; --accent-ink:#1a0d05; --ok:#5ad19a;
+  --dot:#2c394b; --glow:rgba(255,122,69,.35);
+  --display:'Space Grotesk',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#eef1f5; --bg2:#e2e7ee; --win:#fbfcfd; --bar:#e8edf3; --line:#c9d2de;
+  --fg:#16202c; --mute:#566377; --accent:#d9480f; --accent-ink:#fff; --ok:#14804f;
+  --dot:#c3ccd9; --glow:rgba(217,72,15,.25); color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#eef1f5; --bg2:#e2e7ee; --win:#fbfcfd; --bar:#e8edf3; --line:#c9d2de;
+  --fg:#16202c; --mute:#566377; --accent:#d9480f; --accent-ink:#fff; --ok:#14804f;
+  --dot:#c3ccd9; --glow:rgba(217,72,15,.25); color-scheme:light}
+:root[data-theme="dark"]{
+  --bg:#0e1116; --bg2:#151a22; --win:#171d27; --bar:#1f2733; --line:#2a3443;
+  --fg:#e6edf3; --mute:#8b98a9; --accent:#ff7a45; --accent-ink:#1a0d05; --ok:#5ad19a;
+  --dot:#2c394b; --glow:rgba(255,122,69,.35); color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--display);overflow:hidden;position:relative;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+#field{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.desk{position:relative;z-index:1;height:calc(100% - 48px)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* icons */
+.icons{position:absolute;left:0;top:18px;display:grid;gap:6px;width:92px}
+.icon{all:unset;box-sizing:border-box;cursor:pointer;display:grid;justify-items:center;gap:6px;padding:8px 4px;border-radius:8px;text-align:center;font:600 12px var(--mono);color:var(--fg)}
+.icon:hover,.icon:focus-visible{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.icon svg{width:38px;height:38px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* windows */
+.win{position:absolute;display:flex;flex-direction:column;background:var(--win);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35);min-width:0;max-width:calc(100% - 100px);overflow:hidden}
+.win.on-top{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:0 18px 50px rgba(0,0,0,.4),0 0 0 3px var(--glow)}
+.win[hidden]{display:none}
+.bar{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bar);border-bottom:1px solid var(--line);cursor:grab;user-select:none;touch-action:none}
+.bar:active{cursor:grabbing}
+.bar h2{flex:1;margin:0;font:600 12px var(--mono);color:var(--mute);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar button{all:unset;cursor:pointer;width:14px;height:14px;border-radius:50%;background:var(--dot)}
+.bar button.x:hover{background:#ff5f57}.bar button.m:hover{background:#febc2e}
+.body{padding:20px 22px;overflow:auto;min-height:0;flex:1}
+.body h1{font:700 clamp(26px,4vw,40px)/1.05 var(--display);margin:0 0 10px;letter-spacing:-.02em;text-wrap:balance}
+.body h3{font:600 13px var(--mono);margin:20px 0 8px;color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.body p{margin:0 0 10px;max-width:62ch}
+.mute{color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.chips li{font:12px var(--mono);padding:3px 9px;border:1px solid var(--line);border-radius:99px;color:var(--mute)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--bg2);min-width:0}
+.card b{display:block;font:700 16px var(--display);margin-bottom:4px}
+.card .tag{font:11px var(--mono);color:var(--ok)}
+.btn{all:unset;cursor:pointer;display:inline-block;padding:9px 16px;border-radius:7px;background:var(--accent);color:var(--accent-ink);font:600 13px var(--mono)}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:none;color:var(--fg);border:1px solid var(--line)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.copy{font:13px var(--mono);background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;max-width:100%;overflow-wrap:anywhere}
+
+/* terminal */
+.term{font:13px/1.6 var(--mono);background:var(--bg);padding:14px 16px}
+.term .out{white-space:pre-wrap;overflow-wrap:anywhere}
+.term .ln{display:flex;gap:8px;align-items:center}
+.term .ps{color:var(--accent);white-space:nowrap}
+.term input{all:unset;flex:1;min-width:0;color:var(--fg);caret-color:var(--accent)}
+.term .k{color:var(--ok)}
+
+/* taskbar */
+.task{position:fixed;left:0;right:0;bottom:0;height:calc(48px + env(safe-area-inset-bottom,0px));padding:0 max(14px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(14px,env(safe-area-inset-left,0px));
+  display:flex;align-items:center;gap:8px;background:var(--bar);border-top:1px solid var(--line);z-index:5000}
+.task .brand{font:700 14px var(--display);color:var(--accent);margin-right:6px;white-space:nowrap}
+.tabs{display:flex;gap:6px;flex:1;min-width:0;overflow-x:auto}
+.tab{all:unset;cursor:pointer;font:12px var(--mono);padding:5px 10px;border-radius:6px;border:1px solid var(--line);color:var(--mute);white-space:nowrap}
+.tab.act{color:var(--fg);border-color:var(--accent)}
+.clock{font:12px var(--mono);color:var(--mute)}
+.tt{all:unset;cursor:pointer;font:12px var(--mono);padding:5px 9px;border:1px solid var(--line);border-radius:6px;color:var(--fg)}
+
+@media (max-width:760px){
+  body{overflow:hidden}
+  .icons{position:static;grid-template-columns:repeat(5,1fr);width:100%;padding-top:12px}
+  .icon{font-size:10px}.icon svg{width:30px;height:30px}
+  .win{position:fixed!important;left:max(10px,env(safe-area-inset-left,0px))!important;right:max(10px,env(safe-area-inset-right,0px))!important;top:118px!important;bottom:calc(58px + env(safe-area-inset-bottom,0px))!important;width:auto!important;height:auto!important;max-width:none}
+  .bar{cursor:default}.clock,.brand{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<canvas id="field" aria-hidden="true"></canvas>
+
+<main class="desk" id="desk">
+  <nav class="icons" aria-label="Aplikasi">
+    <button class="icon" data-open="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>tentang</button>
+    <button class="icon" data-open="projects"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></svg>proyek</button>
+    <button class="icon" data-open="jasa"><svg viewBox="0 0 24 24"><path d="M4 8h16v11H4zM9 8V5h6v3"/></svg>jasa</button>
+    <button class="icon" data-open="contact"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 3z"/></svg>kontak</button>
+    <button class="icon" data-open="term"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM7 10l3 2-3 2M12 15h4"/></svg>terminal</button>
+  </nav>
+
+  <section class="win" id="about" style="left:120px;top:18px;width:min(520px,60%)" data-title="tentang.txt">
+    <div class="bar"><button class="x" aria-label="Tutup"></button><button class="m" aria-label="Kecilkan"></button><h2>tentang.txt</h2></div>
+    <div class="body">
+      <h1>Halo, aku Pwetr.</h1>
+      <p>Mahasiswa Hukum di sebuah universitas swasta yang suka membangun hal-hal digital: game Roblox, bot Discord, dan web yang jalan di Cloudflare.</p>
+      <p class="mute">Skripsiku membahas perlindungan hak cipta bagi kreator yang karyanya dipakai melatih AI generatif. Hukum dan kode bertemu di situ.</p>
+      <h3>Bisa apa</h3>
+      <ul class="chips"><li>Hukum Hak Cipta</li><li>Roblox Studio / Luau</li><li>Cloudflare Workers</li><li>Bot Discord</li><li>Web statis</li></ul>
+      <div class="row"><button class="btn" data-open="projects">Lihat proyek</button><button class="btn ghost" data-open="term">Buka terminal</button></div>
+    </div>
+  </section>
+
+  <section class="win" id="projects" hidden style="left:180px;top:60px;width:min(640px,70%)" data-title="proyek/">
+    <div class="bar"><button class="x" aria-label="Tutup"></button><button class="m" aria-label="Kecilkan"></button><h2>proyek/</h2></div>
+    <div class="body">
+      <div class="cards">
+        <div class="card"><span class="tag">● berjalan</span><b>Game Roblox</b><p class="mute">Drop Shard dan orb dari kill, notifikasi drop, dan panel dev khusus owner. Dibangun di Roblox Studio.</p></div>
+        <div class="card"><span class="tag">● berjalan</span><b>Notifier Grow a Garden</b><p class="mute">Cloudflare Worker yang mengirim stok seed (termasuk event Witch's Broom) ke Discord.</p></div>
+        <div class="card"><span class="tag">● dibangun</span><b>Hub Dashboard</b><p class="mute">Dashboard bergaya hub: tab, toggle, dan sidebar. Dideploy di Cloudflare.</p></div>
+        <div class="card"><span class="tag">● riset</span><b>Skripsi Hak Cipta &amp; AI</b><p class="mute">Perlindungan kreator yang karyanya dipakai melatih AI generatif.</p></div>
+      </div>
+      <p class="mute" style="margin-top:14px;font-size:13px">Tambahkan tautan GitHub atau demo ke tiap kartu setelah repo siap.</p>
+    </div>
+  </section>
+
+  <section class="win" id="jasa" hidden style="left:230px;top:40px;width:min(480px,60%)" data-title="jasa.md">
+    <div class="bar"><button class="x" aria-label="Tutup"></button><button class="m" aria-label="Kecilkan"></button><h2>jasa.md</h2></div>
+    <div class="body">
+      <h1>Jasa &amp; produk digital</h1>
+      <div class="cards" style="grid-template-columns:1fr">
+        <div class="card"><b>Web statis &amp; landing page</b><p class="mute">Halaman cepat, rapi di HP, siap online di Cloudflare.</p></div>
+        <div class="card"><b>Bot &amp; notifier Discord</b><p class="mute">Notifikasi otomatis, perintah slash, dan pengingat event.</p></div>
+        <div class="card"><b>Script Roblox</b><p class="mute">Sistem drop, panel admin, dan fitur game dalam Luau.</p></div>
+      </div>
+      <div class="row"><button class="btn" data-open="contact">Tanya harga</button></div>
+    </div>
+  </section>
+
+  <section class="win" id="contact" hidden style="left:260px;top:90px;width:min(420px,56%)" data-title="kontak.sh">
+    <div class="bar"><button class="x" aria-label="Tutup"></button><button class="m" aria-label="Kecilkan"></button><h2>kontak.sh</h2></div>
+    <div class="body">
+      <h1>Ngobrol, yuk.</h1>
+      <p class="mute">Isi kontak aslimu di bagian bawah file ini sebelum dipublikasikan.</p>
+      <p>WhatsApp: <span class="copy" id="wa">+62 8xx-xxxx-xxxx</span></p>
+      <p>Discord: <span class="copy" id="dc">kitamakirotomina</span></p>
+      <div class="row"><button class="btn" id="copywa">Salin nomor</button><span class="mute" id="copied" role="status" style="align-self:center;font:12px var(--mono)"></span></div>
+    </div>
+  </section>
+
+  <section class="win" id="term" style="left:420px;top:210px;width:min(540px,62%);height:300px" data-title="terminal">
+    <div class="bar"><button class="x" aria-label="Tutup"></button><button class="m" aria-label="Kecilkan"></button><h2>pwetr@desktop ~ terminal</h2></div>
+    <div class="body term" id="tbody">
+      <div class="out" id="tout"><span class="k">Selamat datang.</span> Ketik <b>help</b> untuk daftar perintah.
+</div>
+      <label class="ln" for="tin"><span class="ps">pwetr@desktop:~$</span><input id="tin" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+    </div>
+  </section>
+</main>
+
+<footer class="task">
+  <span class="brand">pwetr.desktop</span>
+  <div class="tabs" id="tabs"></div>
+  <span class="clock" id="clock"></span>
+  <button class="tt" id="theme" aria-label="Ganti tema">tema</button>
+</footer>
+
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var wins=$$('.win'), z=10, tabs=$('#tabs'), phone=function(){return matchMedia('(max-width:760px)').matches};
+  var tabBtn={};
+
+  function focusWin(w){
+    z++; w.style.zIndex=z;
+    wins.forEach(function(o){o.classList.toggle('on-top',o===w)});
+    Object.keys(tabBtn).forEach(function(k){tabBtn[k].classList.toggle('act',k===w.id&&!w.hidden)});
+  }
+  function openWin(id){
+    var w=document.getElementById(id); if(!w) return;
+    if(phone()) wins.forEach(function(o){if(o!==w) o.hidden=true});
+    w.hidden=false; focusWin(w); syncTabs();
+    if(id==='term') setTimeout(function(){var i=$('#tin'); if(i&&!phone()) i.focus()},0);
+  }
+  function closeWin(w){w.hidden=true; w.classList.remove('on-top'); syncTabs()}
+  function syncTabs(){
+    wins.forEach(function(w){
+      var t=tabBtn[w.id];
+      if(!t){t=document.createElement('button');t.className='tab';t.textContent=w.dataset.title;
+        t.onclick=function(){var x=document.getElementById(w.id); if(x.hidden||!x.classList.contains('on-top')) openWin(w.id); else closeWin(x)};
+        tabs.appendChild(t); tabBtn[w.id]=t}
+      t.style.display=w.hidden?'none':'';
+      t.classList.toggle('act',w.classList.contains('on-top')&&!w.hidden);
+    });
+  }
+
+  wins.forEach(function(w){
+    w.addEventListener('pointerdown',function(){focusWin(w)});
+    $('.x',w).onclick=function(){closeWin(w)};
+    $('.m',w).onclick=function(){closeWin(w)};
+    var bar=$('.bar',w), sx,sy,ox,oy,drag=false;
+    bar.addEventListener('pointerdown',function(e){
+      if(phone()||e.target.tagName==='BUTTON') return;
+      drag=true; sx=e.clientX; sy=e.clientY; ox=w.offsetLeft; oy=w.offsetTop; bar.setPointerCapture(e.pointerId)});
+    bar.addEventListener('pointermove',function(e){
+      if(!drag) return;
+      var d=$('#desk'), nx=Math.max(0,Math.min(d.clientWidth-80,ox+e.clientX-sx)), ny=Math.max(0,Math.min(d.clientHeight-40,oy+e.clientY-sy));
+      w.style.left=nx+'px'; w.style.top=ny+'px'});
+    bar.addEventListener('pointerup',function(){drag=false});
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-open]'); if(b) openWin(b.dataset.open)});
+
+  // phone: only one window at a time
+  function initPhone(){ if(phone()){ var first=wins.filter(function(w){return !w.hidden})[0]; wins.forEach(function(w){w.hidden=(w!==first)}); } }
+  initPhone(); syncTabs(); focusWin($('#about'));
+  addEventListener('resize',function(){});
+
+  // clock (Jakarta)
+  function tick(){try{$('#clock').textContent=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'})+' WIB'}catch(e){}}
+  tick(); setInterval(tick,30000);
+
+  // theme
+  var root=document.documentElement;
+  function setTheme(t){root.setAttribute('data-theme',t); try{localStorage.setItem('pw-theme',t)}catch(e){}}
+  try{var s=localStorage.getItem('pw-theme'); if(s) root.setAttribute('data-theme',s)}catch(e){}
+  function curTheme(){var t=root.getAttribute('data-theme'); return t||(matchMedia('(prefers-color-scheme:light)').matches?'light':'dark')}
+  $('#theme').onclick=function(){setTheme(curTheme()==='dark'?'light':'dark')};
+
+  // copy
+  $('#copywa').onclick=function(){
+    var txt=$('#wa').textContent, m=$('#copied');
+    function ok(){m.textContent='tersalin'; setTimeout(function(){m.textContent=''},1600)}
+    try{navigator.clipboard.writeText(txt).then(ok,function(){m.textContent='pilih teks lalu salin manual'})}catch(e){m.textContent='pilih teks lalu salin manual'}
+  };
+
+  // terminal
+  var out=$('#tout'), tin=$('#tin'), hist=[], hi=0;
+  var cmds={
+    help:function(){return 'perintah: about, projects, skills, jasa, contact, theme, whoami, date, clear, matrix'},
+    about:function(){openWin('about');return 'membuka tentang.txt'},
+    projects:function(){openWin('projects');return 'membuka proyek/'},
+    jasa:function(){openWin('jasa');return 'membuka jasa.md'},
+    contact:function(){openWin('contact');return 'membuka kontak.sh'},
+    skills:function(){return 'hukum-hak-cipta  ██████████\nluau/roblox      █████████░\ncloudflare       ████████░░\ndiscord-bots     ████████░░'},
+    whoami:function(){return 'pwetr — mahasiswa hukum, pembangun hal-hal kecil yang jalan sendiri'},
+    date:function(){return new Date().toLocaleString('id-ID',{timeZone:'Asia/Jakarta'})+' WIB'},
+    theme:function(){setTheme(curTheme()==='dark'?'light':'dark');return 'tema diganti'},
+    clear:function(){out.textContent='';return null},
+    matrix:function(){document.body.classList.toggle('mx'); burst=true; return 'ledakan partikel'},
+    sudo:function(){return 'nice try. izin ditolak.'},
+    ls:function(){return 'tentang.txt  proyek/  jasa.md  kontak.sh'}
+  };
+  tin.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      var v=tin.value.trim(); tin.value=''; if(!v) return;
+      hist.push(v); hi=hist.length;
+      var line=document.createElement('div'); line.innerHTML='<span class="ps">pwetr@desktop:~$</span> '; line.appendChild(document.createTextNode(v)); out.appendChild(line);
+      var key=v.split(/\s+/)[0].toLowerCase(), r=cmds[key]?cmds[key]():'perintah tidak dikenal: '+key+' (ketik help)';
+      if(r){var o=document.createElement('div'); o.textContent=r; out.appendChild(o)}
+      var b=$('#tbody'); b.scrollTop=b.scrollHeight;
+    } else if(e.key==='ArrowUp'&&hist.length){hi=Math.max(0,hi-1);tin.value=hist[hi];e.preventDefault()}
+    else if(e.key==='ArrowDown'){hi=Math.min(hist.length,hi+1);tin.value=hist[hi]||'';e.preventDefault()}
+  });
+
+  // particle field that follows the pointer
+  var cv=$('#field'), cx=cv.getContext('2d'), W,H,P=[],mx=-999,my=-999,burst=false,dpr=Math.min(2,devicePixelRatio||1);
+  function size(){W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0);
+    var n=Math.round(Math.min(110,W*H/14000)); P=[]; for(var i=0;i<n;i++)P.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25})}
+  size(); addEventListener('resize',size);
+  addEventListener('pointermove',function(e){mx=e.clientX;my=e.clientY});
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function col(n){return getComputedStyle(root).getPropertyValue(n).trim()}
+  function frame(){
+    cx.clearRect(0,0,W,H);
+    var a=col('--accent')||'#ff7a45', d=col('--dot')||'#2c394b';
+    if(burst){P.forEach(function(p){p.vx+=(Math.random()-.5)*4;p.vy+=(Math.random()-.5)*4});burst=false}
+    for(var i=0;i<P.length;i++){
+      var p=P[i]; p.x+=p.vx; p.y+=p.vy; p.vx*=.985; p.vy*=.985;
+      if(p.vx*p.vx+p.vy*p.vy<.02){p.vx+=(Math.random()-.5)*.03;p.vy+=(Math.random()-.5)*.03}
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0; if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      var dx=p.x-mx, dy=p.y-my, dd=dx*dx+dy*dy;
+      if(dd<22000){p.vx-=dx/dd*3;p.vy-=dy/dd*3}
+      for(var j=i+1;j<P.length;j++){
+        var q=P[j], ex=p.x-q.x, ey=p.y-q.y, ed=ex*ex+ey*ey;
+        if(ed<9000){cx.globalAlpha=(1-ed/9000)*.5;cx.strokeStyle=d;cx.lineWidth=1;cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(q.x,q.y);cx.stroke()}
+      }
+      cx.globalAlpha=dd<22000?1:.7; cx.fillStyle=dd<22000?a:d; cx.beginPath(); cx.arc(p.x,p.y,dd<22000?2.4:1.6,0,6.3); cx.fill();
+    }
+    cx.globalAlpha=1;
+    if(!reduce) requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+</body>
+</html>
