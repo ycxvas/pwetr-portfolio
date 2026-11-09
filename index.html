@@ -69,6 +69,21 @@ a{color:var(--accent)}
 .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .copy{font:13px var(--mono);background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;max-width:100%;overflow-wrap:anywhere}
 
+
+/* order flow */
+.field{display:grid;gap:4px;margin-bottom:12px}
+.field label{font:600 12px var(--mono);color:var(--mute)}
+.field input,.field select,.field textarea{font:14px var(--display);color:var(--fg);background:var(--bg2);border:1px solid var(--line);border-radius:7px;padding:9px 10px;width:100%;min-width:0}
+.field textarea{min-height:76px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.est{border:1px dashed var(--accent);border-radius:8px;padding:12px 14px;margin:4px 0 14px}
+.est b{font:700 20px var(--display);display:block}
+.qris{display:grid;justify-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:14px;background:#fff;color:#111}
+.qris img{width:min(240px,100%);height:auto;display:block}
+.qris .ph{font:12px var(--mono);color:#555;text-align:center;padding:30px 10px}
+.steps{margin:0 0 12px;padding-left:18px;color:var(--mute);font-size:13px}
+.price{font:600 12px var(--mono);color:var(--ok)}
+
 /* terminal */
 .term{font:13px/1.6 var(--mono);background:var(--bg);padding:14px 16px}
 .term .out{white-space:pre-wrap;overflow-wrap:anywhere}
@@ -135,16 +150,47 @@ a{color:var(--accent)}
     </div>
   </section>
 
-  <section class="win" id="jasa" hidden style="left:230px;top:40px;width:min(480px,60%)" data-title="jasa.md">
+  <section class="win" id="jasa" hidden style="left:230px;top:30px;width:min(520px,64%);max-height:calc(100% - 40px)" data-title="jasa.md">
     <div class="bar"><button class="x" aria-label="Tutup"></button><button class="m" aria-label="Kecilkan"></button><h2>jasa.md</h2></div>
     <div class="body">
-      <h1>Jasa &amp; produk digital</h1>
-      <div class="cards" style="grid-template-columns:1fr">
-        <div class="card"><b>Web statis &amp; landing page</b><p class="mute">Halaman cepat, rapi di HP, siap online di Cloudflare.</p></div>
-        <div class="card"><b>Bot &amp; notifier Discord</b><p class="mute">Notifikasi otomatis, perintah slash, dan pengingat event.</p></div>
-        <div class="card"><b>Script Roblox</b><p class="mute">Sistem drop, panel admin, dan fitur game dalam Luau.</p></div>
+      <div id="j-list">
+        <h1>Jasa &amp; produk digital</h1>
+        <div class="cards" style="grid-template-columns:1fr">
+          <div class="card"><span class="price">Rp 25.000 – 150.000</span><b>Makalah &amp; tugas kuliah</b><p class="mute">Ditulis sesuai pesanan: topik, jumlah halaman, dan format sitasi yang kamu minta. Harga final disepakati sebelum bayar.</p><button class="btn" id="j-start">Pesan sekarang</button></div>
+          <div class="card"><b>Web statis &amp; landing page</b><p class="mute">Halaman cepat, rapi di HP, siap online di Cloudflare.</p></div>
+          <div class="card"><b>Bot &amp; notifier Discord</b><p class="mute">Notifikasi otomatis, perintah slash, dan pengingat event.</p></div>
+          <div class="card"><b>Script Roblox</b><p class="mute">Sistem drop, panel admin, dan fitur game dalam Luau.</p></div>
+        </div>
       </div>
-      <div class="row"><button class="btn" data-open="contact">Tanya harga</button></div>
+
+      <form id="j-form" hidden>
+        <h1>Pesan makalah &amp; tugas</h1>
+        <ol class="steps"><li>Isi detail pesanan</li><li>Kirim ke Discord untuk konfirmasi harga final</li><li>Bayar lewat QRIS</li></ol>
+        <div class="field"><label for="f-nama">Nama</label><input id="f-nama" required maxlength="60" autocomplete="name"></div>
+        <div class="two">
+          <div class="field"><label for="f-jenis">Jenis tugas</label><select id="f-jenis"><option>Makalah</option><option>Esai / artikel</option><option>Resume / ringkasan</option><option>Tugas lainnya</option></select></div>
+          <div class="field"><label for="f-hal">Jumlah halaman</label><input id="f-hal" type="number" min="1" max="60" value="5" required></div>
+        </div>
+        <div class="field"><label for="f-topik">Topik &amp; instruksi dosen</label><textarea id="f-topik" required maxlength="600" placeholder="Contoh: Makalah Hukum Perdata, topik wanprestasi, format APA, minimal 5 referensi"></textarea></div>
+        <div class="two">
+          <div class="field"><label for="f-tempo">Tenggat</label><select id="f-tempo"><option value="1">Santai (7 hari atau lebih)</option><option value="1.3" selected>Normal (3–6 hari)</option><option value="1.8">Kilat (2 hari atau kurang)</option></select></div>
+          <div class="field"><label for="f-kontak">Kontak kamu</label><input id="f-kontak" required maxlength="60" placeholder="Discord atau WhatsApp"></div>
+        </div>
+        <div class="est" role="status"><span class="mute" style="font:12px var(--mono)">Estimasi harga</span><b id="f-est">—</b><span class="mute" style="font-size:12px">Perkiraan awal. Harga final menyusul setelah topik dicek.</span></div>
+        <div class="row" style="margin-top:0"><button class="btn" type="submit">Kirim pesanan</button><button class="btn ghost" type="button" id="j-back1">Kembali</button></div>
+      </form>
+
+      <div id="j-done" hidden>
+        <h1>Pesanan siap</h1>
+        <p class="mute">Kode pesanan: <span class="copy" id="d-kode"></span></p>
+        <h3>Langkah berikutnya</h3>
+        <ol class="steps" style="color:var(--fg)"><li>Salin pesan di bawah, lalu kirim ke Discord <b>kitamakirotomina</b>.</li><li>Tunggu konfirmasi harga final.</li><li>Bayar lewat QRIS di bawah, lalu kirim bukti bayarnya.</li></ol>
+        <div class="copy" id="d-pesan" style="white-space:pre-wrap;display:block;margin-bottom:10px"></div>
+        <div class="row" style="margin:0 0 16px"><button class="btn" id="d-copy">Salin pesan</button><button class="btn ghost" id="j-back2">Pesan lagi</button><span class="mute" id="d-ok" role="status" style="align-self:center;font:12px var(--mono)"></span></div>
+        <h3>Bayar dengan QRIS</h3>
+        <p class="mute" style="font-size:13px">Bayar hanya setelah harga final disepakati. Buka e-wallet atau m-banking, pilih scan, lalu arahkan ke kode ini.</p>
+        <div class="qris"><img id="qris" src="qris.png" alt="Kode QRIS pembayaran" onerror="this.hidden=true;document.getElementById('qris-ph').hidden=false"><div class="ph" id="qris-ph" hidden>Kode QRIS akan tampil di sini.</div></div>
+      </div>
     </div>
   </section>
 
@@ -302,6 +348,38 @@ a{color:var(--accent)}
     if(!reduce) requestAnimationFrame(frame);
   }
   frame();
+})();
+</script>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  function show(id){['j-list','j-form','j-done'].forEach(function(x){$(x).hidden=(x!==id)});var b=$('jasa').querySelector('.body');b.scrollTop=0}
+  function rp(n){return 'Rp '+(Math.round(n/1000)*1000).toLocaleString('id-ID')}
+  function est(){
+    var h=Math.max(1,Math.min(60,+$('f-hal').value||1)), m=+$('f-tempo').value;
+    var lo=Math.max(25000,h*8000*m), hi=Math.min(Math.max(lo+10000,h*15000*m),400000);
+    return {lo:lo,hi:hi,txt:rp(lo)+' – '+rp(hi)};
+  }
+  function upd(){$('f-est').textContent=est().txt}
+  ['f-hal','f-tempo','f-jenis'].forEach(function(i){$(i).addEventListener('input',upd)}); upd();
+  $('j-start').onclick=function(){show('j-form')};
+  $('j-back1').onclick=function(){show('j-list')};
+  $('j-back2').onclick=function(){$('j-form').reset();upd();show('j-form')};
+  var tempoName={'1':'Santai','1.3':'Normal','1.8':'Kilat'};
+  $('j-form').addEventListener('submit',function(e){
+    e.preventDefault();
+    var kode='PW-'+Math.random().toString(36).slice(2,6).toUpperCase(), E=est();
+    var msg='Halo, aku mau pesan jasa makalah/tugas.\n'+
+      'Kode: '+kode+'\nNama: '+$('f-nama').value.trim()+'\nJenis: '+$('f-jenis').value+
+      '\nHalaman: '+$('f-hal').value+'\nTenggat: '+tempoName[$('f-tempo').value]+
+      '\nTopik: '+$('f-topik').value.trim()+'\nKontak: '+$('f-kontak').value.trim()+
+      '\nEstimasi: '+E.txt;
+    $('d-kode').textContent=kode; $('d-pesan').textContent=msg; show('j-done');
+  });
+  $('d-copy').onclick=function(){
+    var m=$('d-ok'); function ok(){m.textContent='tersalin';setTimeout(function(){m.textContent=''},1600)}
+    try{navigator.clipboard.writeText($('d-pesan').textContent).then(ok,function(){m.textContent='pilih teks lalu salin manual'})}catch(e){m.textContent='pilih teks lalu salin manual'}
+  };
 })();
 </script>
 </body>
