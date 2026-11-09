@@ -84,10 +84,6 @@ a{color:var(--accent)}
 .steps{margin:0 0 12px;padding-left:18px;color:var(--mute);font-size:13px}
 .price{font:600 12px var(--mono);color:var(--ok)}
 
-
-.hud{display:flex;justify-content:space-between;font:12px var(--mono);color:var(--mute);margin-bottom:8px}
-.hud b{color:var(--fg);font-size:15px}
-#g-c{width:100%;height:auto;display:block;background:var(--bg);border:1px solid var(--line);border-radius:8px;touch-action:none;cursor:crosshair}
 /* terminal */
 .term{font:13px/1.6 var(--mono);background:var(--bg);padding:14px 16px}
 .term .out{white-space:pre-wrap;overflow-wrap:anywhere}
@@ -108,8 +104,8 @@ a{color:var(--accent)}
 
 @media (max-width:760px){
   body{overflow:hidden}
-  .icons{position:static;grid-template-columns:repeat(6,1fr);width:100%;padding-top:12px}
-  .icon{font-size:9px;padding:6px 0}.icon svg{width:26px;height:26px}
+  .icons{position:static;grid-template-columns:repeat(5,1fr);width:100%;padding-top:12px}
+  .icon{font-size:10px}.icon svg{width:30px;height:30px}
   .win{position:fixed!important;left:max(10px,env(safe-area-inset-left,0px))!important;right:max(10px,env(safe-area-inset-right,0px))!important;top:118px!important;bottom:calc(58px + env(safe-area-inset-bottom,0px))!important;width:auto!important;height:auto!important;max-width:none}
   .bar{cursor:default}.clock,.brand{display:none}
 }
@@ -127,7 +123,6 @@ a{color:var(--accent)}
     <button class="icon" data-open="jasa"><svg viewBox="0 0 24 24"><path d="M4 8h16v11H4zM9 8V5h6v3"/></svg>jasa</button>
     <button class="icon" data-open="contact"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 3z"/></svg>kontak</button>
     <button class="icon" data-open="term"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM7 10l3 2-3 2M12 15h4"/></svg>terminal</button>
-    <button class="icon" data-open="game"><svg viewBox="0 0 24 24"><path d="M12 3l7 5v8l-7 5-7-5V8z"/><path d="M12 3v18M5 8l14 8M19 8L5 16"/></svg>game</button>
   </nav>
 
   <section class="win" id="about" style="left:120px;top:18px;width:min(520px,60%)" data-title="tentang.txt">
@@ -209,15 +204,6 @@ a{color:var(--accent)}
       <p>WhatsApp: <span class="copy" id="wa">+62 8xx-xxxx-xxxx</span></p>
       <p>Discord: <span class="copy" id="dc">kitamakirotomina</span></p>
       <div class="row"><button class="btn" id="copywa">Salin nomor</button><span class="mute" id="copied" role="status" style="align-self:center;font:12px var(--mono)"></span></div>
-    </div>
-  </section>
-
-  <section class="win" id="game" hidden style="left:300px;top:40px;width:min(460px,62%)" data-title="shard-hunter.exe">
-    <div class="bar"><button class="x" aria-label="Tutup"></button><button class="m" aria-label="Kecilkan"></button><h2>shard-hunter.exe</h2></div>
-    <div class="body" style="padding:14px">
-      <div class="hud"><span>Skor <b id="g-s">0</b></span><span>Waktu <b id="g-t">30</b></span><span>Rekor <b id="g-b">0</b></span></div>
-      <canvas id="g-c" width="420" height="320" aria-label="Area permainan Shard Hunter"></canvas>
-      <div class="row" style="margin-top:10px"><button class="btn" id="g-go">Mulai</button><span class="mute" style="align-self:center;font-size:13px">Klik orb oranye (+1) dan shard biru langka (+5).</span></div>
     </div>
   </section>
 
@@ -402,55 +388,6 @@ a{color:var(--accent)}
     var m=$('d-ok'); function ok(){m.textContent='tersalin';setTimeout(function(){m.textContent=''},1600)}
     try{navigator.clipboard.writeText($('d-pesan').textContent).then(ok,function(){m.textContent='pilih teks lalu salin manual'})}catch(e){m.textContent='pilih teks lalu salin manual'}
   };
-})();
-</script>
-<script>
-(function(){
-  var cv=document.getElementById('g-c'), c=cv.getContext('2d'), W=420, H=320;
-  var $=function(i){return document.getElementById(i)}, root=document.documentElement;
-  var orbs=[], score=0, left=30, run=false, last=0, spawnT=0, endAt=0, raf=0, best=0, pops=[];
-  try{best=+localStorage.getItem('pw-best')||0}catch(e){} $('g-b').textContent=best;
-  function col(n){return getComputedStyle(root).getPropertyValue(n).trim()}
-  function draw(msg){
-    c.clearRect(0,0,W,H);
-    var acc=col('--accent')||'#ff7a45', fg=col('--fg')||'#fff', mu=col('--mute')||'#888';
-    orbs.forEach(function(o){
-      c.beginPath(); c.arc(o.x,o.y,o.r,0,6.3);
-      c.fillStyle=o.rare?'#4cc9f0':acc; c.shadowColor=o.rare?'#4cc9f0':acc; c.shadowBlur=14; c.fill(); c.shadowBlur=0;
-      if(o.rare){c.strokeStyle=fg;c.lineWidth=2;c.stroke()}
-    });
-    pops.forEach(function(p){c.globalAlpha=p.a;c.fillStyle=fg;c.font='700 16px system-ui,sans-serif';c.fillText(p.t,p.x-10,p.y);c.globalAlpha=1});
-    if(msg){c.fillStyle=fg;c.font='700 22px system-ui,sans-serif';c.textAlign='center';c.fillText(msg[0],W/2,H/2-6);
-      c.fillStyle=mu;c.font='13px ui-monospace,monospace';c.fillText(msg[1],W/2,H/2+20);c.textAlign='left'}
-  }
-  function start(){
-    orbs=[];pops=[];score=0;left=30;run=true;last=performance.now();endAt=last+30000;spawnT=0;
-    $('g-s').textContent=0;$('g-go').textContent='Main lagi';
-    cancelAnimationFrame(raf); raf=requestAnimationFrame(loop);
-  }
-  function end(){
-    run=false; var nb=score>best; if(nb){best=score;try{localStorage.setItem('pw-best',best)}catch(e){}}
-    $('g-b').textContent=best; $('g-t').textContent=0;
-    orbs=[];pops=[]; draw(['Skor '+score, nb?'Rekor baru!':'Coba lagi, bisa lebih tinggi.']);
-  }
-  function loop(t){
-    if(!run) return;
-    var dt=Math.min(40,t-last); last=t; left=Math.max(0,Math.ceil((endAt-t)/1000)); $('g-t').textContent=left;
-    spawnT-=dt; var rate=Math.max(260,620-(30-left)*10);
-    if(spawnT<=0){spawnT=rate; var rare=Math.random()<.12; orbs.push({x:20+Math.random()*(W-40),y:-12,r:rare?11:15,v:(rare?.2:.11)+Math.random()*.08+(30-left)*.004,rare:rare})}
-    orbs.forEach(function(o){o.y+=o.v*dt}); orbs=orbs.filter(function(o){return o.y<H+20});
-    pops.forEach(function(p){p.y-=.04*dt;p.a-=.0016*dt}); pops=pops.filter(function(p){return p.a>0});
-    draw(); if(t>=endAt){end();return} raf=requestAnimationFrame(loop);
-  }
-  function hit(e){
-    if(!run) return;
-    var r=cv.getBoundingClientRect(), x=(e.clientX-r.left)*W/r.width, y=(e.clientY-r.top)*H/r.height;
-    for(var i=orbs.length-1;i>=0;i--){var o=orbs[i];
-      if(Math.hypot(o.x-x,o.y-y)<=o.r+8){score+=o.rare?5:1;pops.push({x:o.x,y:o.y,a:1,t:'+'+(o.rare?5:1)});orbs.splice(i,1);$('g-s').textContent=score;break}}
-  }
-  cv.addEventListener('pointerdown',hit);
-  $('g-go').onclick=start;
-  draw(['Shard Hunter','Tekan Mulai. Waktumu 30 detik.']);
 })();
 </script>
 </body>
