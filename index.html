@@ -146,7 +146,6 @@ a{color:var(--accent)}
         <div class="card"><span class="tag">● dibangun</span><b>Hub Dashboard</b><p class="mute">Dashboard bergaya hub: tab, toggle, dan sidebar. Dideploy di Cloudflare.</p></div>
         <div class="card"><span class="tag">● riset</span><b>Skripsi Hak Cipta &amp; AI</b><p class="mute">Perlindungan kreator yang karyanya dipakai melatih AI generatif.</p></div>
       </div>
-      <p class="mute" style="margin-top:14px;font-size:13px">Tambahkan tautan GitHub atau demo ke tiap kartu setelah repo siap.</p>
     </div>
   </section>
 
@@ -156,7 +155,7 @@ a{color:var(--accent)}
       <div id="j-list">
         <h1>Jasa &amp; produk digital</h1>
         <div class="cards" style="grid-template-columns:1fr">
-          <div class="card"><span class="price">Rp 25.000 – 150.000</span><b>Makalah &amp; tugas kuliah</b><p class="mute">Ditulis sesuai pesanan: topik, jumlah halaman, dan format sitasi yang kamu minta. Harga final disepakati sebelum bayar.</p><button class="btn" id="j-start">Pesan sekarang</button></div>
+          <div class="card"><span class="price">Rp 25.000 – 150.000</span><b>Pendampingan makalah &amp; tugas</b><p class="mute">Bantuan riset, kerangka tulisan, draf, dan penyuntingan sesuai topik, jumlah halaman, dan format sitasi yang kamu minta. Hasilnya untuk bahan belajar dan rujukan; kamu tetap bertanggung jawab atas karya yang kamu kumpulkan dan wajib mengikuti aturan kampusmu. Harga final disepakati sebelum bayar.</p><button class="btn" id="j-start">Pesan sekarang</button></div>
           <div class="card"><b>Web statis &amp; landing page</b><p class="mute">Halaman cepat, rapi di HP, siap online di Cloudflare.</p></div>
           <div class="card"><b>Bot &amp; notifier Discord</b><p class="mute">Notifikasi otomatis, perintah slash, dan pengingat event.</p></div>
           <div class="card"><b>Script Roblox</b><p class="mute">Sistem drop, panel admin, dan fitur game dalam Luau.</p></div>
@@ -164,11 +163,11 @@ a{color:var(--accent)}
       </div>
 
       <form id="j-form" hidden>
-        <h1>Pesan makalah &amp; tugas</h1>
+        <h1>Pesan pendampingan</h1>
         <ol class="steps"><li>Isi detail pesanan</li><li>Kirim ke Discord untuk konfirmasi harga final</li><li>Bayar lewat QRIS</li></ol>
         <div class="field"><label for="f-nama">Nama</label><input id="f-nama" required maxlength="60" autocomplete="name"></div>
         <div class="two">
-          <div class="field"><label for="f-jenis">Jenis tugas</label><select id="f-jenis"><option>Makalah</option><option>Esai / artikel</option><option>Resume / ringkasan</option><option>Tugas lainnya</option></select></div>
+          <div class="field"><label for="f-jenis">Jenis bantuan</label><select id="f-jenis"><option>Draf makalah</option><option>Esai / artikel</option><option>Resume / ringkasan</option><option>Penyuntingan / proofreading</option><option>Lainnya</option></select></div>
           <div class="field"><label for="f-hal">Jumlah halaman</label><input id="f-hal" type="number" min="1" max="60" value="5" required></div>
         </div>
         <div class="field"><label for="f-topik">Topik &amp; instruksi dosen</label><textarea id="f-topik" required maxlength="600" placeholder="Contoh: Makalah Hukum Perdata, topik wanprestasi, format APA, minimal 5 referensi"></textarea></div>
@@ -200,10 +199,9 @@ a{color:var(--accent)}
     <div class="bar"><button class="x" aria-label="Tutup"></button><button class="m" aria-label="Kecilkan"></button><h2>kontak.sh</h2></div>
     <div class="body">
       <h1>Ngobrol, yuk.</h1>
-      <p class="mute">Isi kontak aslimu di bagian bawah file ini sebelum dipublikasikan.</p>
-      <p>WhatsApp: <span class="copy" id="wa">+62 8xx-xxxx-xxxx</span></p>
+      <p class="mute">Cara paling cepat menghubungiku adalah lewat Discord.</p>
       <p>Discord: <span class="copy" id="dc">kitamakirotomina</span></p>
-      <div class="row"><button class="btn" id="copywa">Salin nomor</button><span class="mute" id="copied" role="status" style="align-self:center;font:12px var(--mono)"></span></div>
+      <div class="row"><button class="btn" id="copydc">Salin Discord</button><span class="mute" id="copied" role="status" style="align-self:center;font:12px var(--mono)"></span></div>
     </div>
   </section>
 
@@ -287,8 +285,8 @@ a{color:var(--accent)}
   $('#theme').onclick=function(){setTheme(curTheme()==='dark'?'light':'dark')};
 
   // copy
-  $('#copywa').onclick=function(){
-    var txt=$('#wa').textContent, m=$('#copied');
+  $('#copydc').onclick=function(){
+    var txt=$('#dc').textContent, m=$('#copied');
     function ok(){m.textContent='tersalin'; setTimeout(function(){m.textContent=''},1600)}
     try{navigator.clipboard.writeText(txt).then(ok,function(){m.textContent='pilih teks lalu salin manual'})}catch(e){m.textContent='pilih teks lalu salin manual'}
   };
@@ -371,7 +369,7 @@ a{color:var(--accent)}
   $('j-form').addEventListener('submit',function(e){
     e.preventDefault();
     var kode='PW-'+Math.random().toString(36).slice(2,6).toUpperCase(), E=est();
-    var msg='Halo, aku mau pesan jasa makalah/tugas.\n'+
+    var msg='Halo, aku mau pesan jasa pendampingan makalah/tugas.\n'+
       'Kode: '+kode+'\nNama: '+$('f-nama').value.trim()+'\nJenis: '+$('f-jenis').value+
       '\nHalaman: '+$('f-hal').value+'\nTenggat: '+tempoName[$('f-tempo').value]+
       '\nTopik: '+$('f-topik').value.trim()+'\nKontak: '+$('f-kontak').value.trim()+
